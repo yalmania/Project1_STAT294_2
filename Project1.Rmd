@@ -1,0 +1,302 @@
+---
+title: "Analysis of 217 8th Grade Students' Math Scores"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+--- 
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(error = TRUE)
+```
+
+```{r setup, include=FALSE}
+
+#install.packages("foreign")  
+library("foreign")
+d <- read.spss("/Users/yasmi/Desktop/STAT 294/1ResearchProjectData.sav", to.data.frame = TRUE)
+head(d)
+d2 <- na.omit(d)
+d3 <- transform(d2,
+                'TeachingStyle'= ifelse(d2$wesson=='Ruger_Smith', 'standard','traditional'))
+```
+
+# General Data Analysis
+
+Hello school principal! This dashboard enables visualizations of students' math grades.
+
+Row {data-height=700}
+-------------------------------------
+
+### 1.1 Ethnicity analysis
+```{r, results='hide',fig.keep='all'}
+library(plyr)
+library(dplyr)
+EthCount=table(d3$Ethnic)
+
+library(lessR)
+PieChart(EthCount,data=EthCount,hole=0,lables = c('Asian','African-American','Hispanic','Caucasian'), 
+         values = "%", main = 'Percentage of Students Per Ethnic Category')
+``` 
+
+### 1.2 Gender analysis per ethnicity 
+```{r,echo=FALSE}
+genderPerEthnicity <- table(d3$Gender, d3$Ethnic)
+barplot(genderPerEthnicity, main="Gender per Ethnic Category",
+        xlab="Ethnic Category", ylab='# of Students', legend = c('female','male'), beside=TRUE)
+``` 
+
+
+Row {data-height=700}
+-------------------------------------
+### 1.3 Percentage of students per teacher
+```{r,results='hide',fig.keep='all'}
+StuPerT=table(d3$Teacher)
+PieChart(StuPerT,data=StuPerT,hole=0,lables = c('Ruger','Smith','Wesson'), 
+         values = "%", main = 'Percentage of Students Per Teacher')
+``` 
+
+### 1.4 Eligibility for free lunch
+```{r,results='hide',fig.keep='all'}
+Stu_FreeEdu=table(d3$Freeredu)
+PieChart(Stu_FreeEdu,data=Stu_FreeEdu,hole=0,lables = c('Free lunch','Paid lunch'), 
+         values = "%", main = 'Percentage of Eligible/Non-eligible Students for Free Launch')
+``` 
+
+
+Row {data-height=700}
+-------------------------------------
+### 1.4.1 Eligibility for free lunch per gender
+```{r,echo=FALSE}
+Stu_FreeEdu_G=table(d3$Gender,d3$Freeredu)
+barplot(Stu_FreeEdu_G,
+        main="No. of Students Eligible/Non-eligible for Free Launch per Gender", 
+        ylab='# of Students', beside = TRUE, 
+        legend = c('Female','Male'))
+``` 
+
+### 1.4.2 Eligibility for free lunch per ethnicity
+```{r,echo=FALSE}
+Stu_FreeEdu_Eth=table(d3$Freeredu,d3$Ethnic)
+barplot(Stu_FreeEdu_Eth,
+        main="No. of Students Eligible/Non-eligible for Free Launch \nper Ethnicity", 
+        ylab='# of Students', beside = TRUE, 
+        legend = c('Free launch', 'Paid launch'))
+``` 
+
+
+
+# Score Analysis by Visualizations (against one variable)
+
+Row {data-height=900}
+-------------------------------------
+
+### 2.1 Average math scores per teaching method
+```{r}
+RowsForStandard <- d3[ d3$TeachingStyle == 'standard' , ]
+AvgMathScore_Standard <- mean(RowsForStandard$Score)
+
+RowsForTraditional <- d3[ d3$TeachingStyle == 'traditional' , ]
+AvgMathScore_Traditional <- mean(RowsForTraditional$Score)
+
+barplot(c(AvgMathScore_Standard, AvgMathScore_Traditional)~c("Standard", "Traditional"), 
+        xlab='Teaching Method',
+        main="Average Math Scores for 216 8th Grade Students Per Teaching Method", 
+        ylab='Average Math Scores (out of 100)')
+```
+
+### 2.2 Average math scores per teacher
+```{r}
+Rows_Ruger <- d3[ d3$Teacher == 'Ruger' , ]
+AvgMathScore_Ruger <- mean(Rows_Ruger$Score)
+
+Rows_Smith <- d3[ d3$Teacher == 'Smith' , ]
+AvgMathScore_Smith <- mean(Rows_Smith$Score)
+
+Rows_Wesson <- d3[ d3$Teacher == 'Wesson' , ]
+AvgMathScore_Wesson <- mean(Rows_Wesson$Score)
+
+barplot(c(AvgMathScore_Ruger, AvgMathScore_Smith, AvgMathScore_Wesson)~c("Ruger", "Smith","Wesson"), 
+        xlab='Teacher',
+        main="Average Math Scores for 216 8th Grade Students Per Teacher", 
+        ylab='Average Math Scores (out of 100)')
+
+```   
+
+Row {data-height=900}
+-------------------------------------
+
+### 2.3 Average scores per free lunch eligibility 
+```{r}
+Rows_FreeEdu <- d3[ d3$Freeredu == 'Free lunch' , ]
+AvgMathScore_FreeEdu <- mean(Rows_FreeEdu$Score)
+
+Rows_PaidEdu <- d3[ d3$Freeredu == 'Paid lunch' , ]
+AvgMathScore_PaidEdu <- mean(Rows_PaidEdu$Score)
+
+barplot(c(AvgMathScore_FreeEdu, AvgMathScore_PaidEdu)~c("Free Launch", "Paid Launch"), 
+        xlab='Economic Elgibility for Free/Paid Lunch', 
+        main="Average Math Scores for 216 8th Grade Students Per \n Elgibility for Free/Paid Lunch", 
+        ylab='Average Math Scores (out of 100)')
+```
+
+### 2.4 Average scores per gender
+```{r}
+Rows_F <- d3[ d3$Gender == 'Female' , ]
+AvgMathScore_F <- mean(Rows_F$Score)
+
+Rows_M <- d3[ d3$Gender == 'Male' , ]
+AvgMathScore_M <- mean(Rows_M$Score)
+
+barplot(c(AvgMathScore_F, AvgMathScore_M)~c("F", "M"), 
+        xlab='Gender Category', 
+        main="Average Math Scores for 216 8th Grade Students \nPer Gender Category", 
+        ylab='Average Math Scores (out of 100)')
+
+```   
+
+Row {data-height=900}
+-------------------------------------
+
+### 2.5 Average scores per ethnicity
+```{r}
+Rows_Asian <- d3[ d3$Ethnic == 'Asian' , ]
+AvgMathScore_Asian <- mean(Rows_Asian$Score)
+
+Rows_AA <- d3[ d3$Ethnic == 'African-American' , ]
+AvgMathScore_AA <- mean(Rows_AA$Score)
+
+Rows_Hisp <- d3[ d3$Ethnic == 'Hispanic' , ]
+AvgMathScore_Hisp <- mean(Rows_Hisp$Score)
+
+Rows_Cauc <- d3[ d3$Ethnic == 'Caucasian' , ]
+AvgMathScore_Cauc <- mean(Rows_Cauc$Score)
+
+barplot(c(AvgMathScore_Asian,AvgMathScore_AA,AvgMathScore_Hisp,AvgMathScore_Cauc)~c('Asian','African-American','Hispanic','Caucasian'), 
+        xlab='Ethnic Category',
+        main="Average Math Scores for 216 8th Grade Students Per \nEthnic Category", 
+        ylab='Average Math Scores (out of 100)')
+```
+ 
+ 
+ 
+# Score Analysis by Visualizations (against two variable)
+
+Row {data-height=500}
+-------------------------------------
+
+### 3.1 Average math scores per ethnicity per gender
+```{r}
+Rows_Asian=d3[d3$Ethnic=='Asian',]
+Rows_Asian_F=Rows_Asian[Rows_Asian$Gender=='Female',]
+AvgMathScore_Asian_F=mean(Rows_Asian_F$Score)
+
+Rows_Asian_M=Rows_Asian[Rows_Asian$Gender=='Male',]
+AvgMathScore_Asian_M=mean(Rows_Asian_M$Score)
+
+
+Rows_Hisp=d3[d3$Ethnic=='Hispanic',]
+Rows_Hisp_F=Rows_Hisp[Rows_Hisp$Gender=='Female',]
+AvgMathScore_Hisp_F=mean(Rows_Hisp_F$Score)
+
+Rows_Hisp_M=Rows_Hisp[Rows_Hisp$Gender=='Male',]
+AvgMathScore_Hisp_M=mean(Rows_Hisp_M$Score)
+
+
+Rows_AA=d3[d3$Ethnic=='African-American',]
+Rows_AA_F=Rows_AA[Rows_AA$Gender=='Female',]
+AvgMathScore_AA_F=mean(Rows_AA_F$Score)
+
+Rows_AA_M=Rows_AA[Rows_AA$Gender=='Male',]
+AvgMathScore_AA_M=mean(Rows_AA_M$Score)
+
+
+Rows_Cauc=d3[d3$Ethnic=='Caucasian',]
+Rows_Cauc_F=Rows_Cauc[Rows_Cauc$Gender=='Female',]
+AvgMathScore_Cauc_F=mean(Rows_Cauc_F$Score)
+
+Rows_Cauc_M=Rows_Cauc[Rows_Cauc$Gender=='Male',]
+AvgMathScore_Cauc_M=mean(Rows_Cauc_M$Score)
+
+
+DF=table(d3$Gender,d3$Ethnic)
+
+#DF is:
+#        Asian   African-American  Hispanic  Caucasian
+#Female    26               20       31        19
+#Male      27               32       35        26
+
+DF[1,1]=AvgMathScore_Asian_F
+DF[2,1]=AvgMathScore_Asian_M
+
+DF[1,2]=AvgMathScore_AA_F
+DF[2,2]=AvgMathScore_AA_M
+
+DF[1,3]=AvgMathScore_Hisp_F
+DF[2,3]=AvgMathScore_Hisp_M
+
+DF[1,4]=AvgMathScore_Cauc_F
+DF[2,4]=AvgMathScore_Cauc_M
+
+barplot(DF, main="Average Math Scores per Ethnicity per Gender",
+        xlab="Ethnic Category", ylab='Average Math Scores (out of 100)', legend = c('Female','Male'), beside=TRUE)
+
+```
+
+Row {data-height=500}
+-------------------------------------
+
+### 3.2 Average math scores per ethnicity per teaching style
+```{r}
+Rows_Asian_Stndr=Rows_Asian[Rows_Asian$TeachingStyle=='standard',]
+AvgMathScore_Asian_Stndr=mean(Rows_Asian_Stndr$Score)
+
+Rows_Asian_Trad=Rows_Asian[Rows_Asian$TeachingStyle=='traditional',]
+AvgMathScore_Asian_Trad=mean(Rows_Asian_Trad$Score)
+
+
+Rows_Hisp_Stndr=Rows_Hisp[Rows_Hisp$TeachingStyle=='standard',]
+AvgMathScore_Hisp_Stndr=mean(Rows_Hisp_Stndr$Score)
+
+Rows_Hisp_Trad=Rows_Hisp[Rows_Hisp$TeachingStyle=='traditional',]
+AvgMathScore_Hisp_Trad=mean(Rows_Hisp_Trad$Score)
+
+
+Rows_AA_Stndr=Rows_AA[Rows_AA$TeachingStyle=='standard',]
+AvgMathScore_AA_Stndr=mean(Rows_AA_Stndr$Score)
+
+Rows_AA_Trad=Rows_AA[Rows_AA$TeachingStyle=='traditional',]
+AvgMathScore_AA_Trad=mean(Rows_AA_Trad$Score)
+
+
+Rows_Cauc_Stndr=Rows_Cauc[Rows_Cauc$TeachingStyle=='standard',]
+AvgMathScore_Cauc_Stndr=mean(Rows_Cauc_Stndr$Score)
+
+Rows_Cauc_Trad=Rows_Cauc[Rows_Cauc$TeachingStyle=='traditional',]
+AvgMathScore_Cauc_Trad=mean(Rows_Cauc_Trad$Score)
+
+
+DF_2=table(d3$TeachingStyle,d3$Ethnic)
+
+#DF_2 is:
+#              Asian    African-American Hispanic Caucasian
+#standard       37               34       43        26
+#traditional    16               18       23        19
+
+DF_2[1,1]=AvgMathScore_Asian_Stndr
+DF_2[2,1]=AvgMathScore_Asian_Trad
+
+DF_2[1,2]=AvgMathScore_AA_Stndr
+DF_2[2,2]=AvgMathScore_AA_Trad
+
+DF_2[1,3]=AvgMathScore_Hisp_Stndr
+DF_2[2,3]=AvgMathScore_Hisp_Trad
+
+DF_2[1,4]=AvgMathScore_Cauc_Stndr
+DF_2[2,4]=AvgMathScore_Cauc_Trad
+
+barplot(DF_2, main="Average Math Scores per Ethnicity per Teaching Style",
+        xlab="Ethnic Category", ylab='Average Math Scores (out of 100)', 
+        legend = c('Standard','Traditional'),
+        beside=TRUE)
+
+```
